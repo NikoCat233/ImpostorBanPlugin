@@ -1,4 +1,5 @@
-﻿using Impostor.Api.Events;
+﻿using System.Text;
+using Impostor.Api.Events;
 using Impostor.Api.Games;
 using Microsoft.Extensions.Logging;
 
@@ -26,9 +27,10 @@ namespace ImpostorBanPlugin
                 return;
 
             string puid = player.Client.Puid;
+            string hashPUID = HashedPuid(puid);
             string friendcode = player.Client.FriendCode;
 
-            if (_eacFunctions.CheckHashPUIDExists(puid) || _eacFunctions.CheckFriendCodeExists(friendcode))
+            if (_eacFunctions.CheckHashPUIDExists(hashPUID) || _eacFunctions.CheckFriendCodeExists(friendcode))
             {
                 _logger.LogWarning("{0} - Player {1} [{2}] is banned by EAC.", e.Game.Code, player.Client?.Name, player.Client?.Id);
 
@@ -36,7 +38,7 @@ namespace ImpostorBanPlugin
                 return;
             }
 
-            if (CheckBanList(puid, friendcode))
+            if (CheckBanList(friendcode, hashPUID))
             {
                 _logger.LogWarning("{0} - Player {1} [{2}] is banned by BanList.", e.Game.Code, player.Client?.Name, player.Client?.Id);
 
@@ -71,6 +73,19 @@ namespace ImpostorBanPlugin
                 _logger.LogError(ex, "CheckBanList");
             }
             return false;
+        }
+
+        public static string HashedPuid(string puid2)
+        {
+            if (string.IsNullOrEmpty(puid2))
+            {
+                return string.Empty;
+            }
+
+            var sha256Bytes = System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(puid2));
+            var sha256Hash = BitConverter.ToString(sha256Bytes).Replace("-", string.Empty).ToLower();
+
+            return $"{sha256Hash[..5]}{sha256Hash[^4..]}";
         }
     }
 }

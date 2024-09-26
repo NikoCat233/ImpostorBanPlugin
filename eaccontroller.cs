@@ -7,7 +7,7 @@ public class EacController
 {
     public class EacData
     {
-        #pragma warning disable IDE1006
+#pragma warning disable IDE1006
         public required string friendcode { get; set; }
 
         public required string hashPUID { get; set; }
@@ -15,7 +15,7 @@ public class EacController
         public required string name { get; set; }
 
         public required string reason { get; set; }
-        #pragma warning restore IDE1006
+#pragma warning restore IDE1006
     }
 
     public class EACList
@@ -65,7 +65,7 @@ public class EacController
 
             foreach (var eacData in _eacList.EACDataList)
             {
-                if (eacData.hashPUID == hashPUID)
+                if (eacData.hashPUID.ToLower() == hashPUID.ToLower())
                 {
                     _logger.LogInformation("HashPUID {0} exists in EACList. Reason {1}", hashPUID, eacData.reason);
                     return true;
