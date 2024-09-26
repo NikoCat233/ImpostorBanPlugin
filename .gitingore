@@ -1,7 +1,9 @@
-/.vscode
-/build
 /.vs
-/src/Impostor.Plugins.Debugger/Properties/launchSettings.json
-/tools
+/bin
+/obj
+/.editorconfig
+/.vscode
+/.idea
 
-.local/
+TOHE.sln
+.vscode/settings.json
