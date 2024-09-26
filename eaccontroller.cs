@@ -65,7 +65,7 @@ public class EacController
 
             foreach (var eacData in _eacList.EACDataList)
             {
-                if (eacData.hashPUID.ToLower() == hashPUID.ToLower())
+                if (eacData.hashPUID != null && eacData.hashPUID.Equals(hashPUID, StringComparison.CurrentCultureIgnoreCase))
                 {
                     _logger.LogInformation("HashPUID {0} exists in EACList. Reason {1}", hashPUID, eacData.reason);
                     return true;
@@ -85,7 +85,7 @@ public class EacController
 
             foreach (var eacData in _eacList.EACDataList)
             {
-                if (eacData.friendcode == friendcode)
+                if (eacData.friendcode != null && eacData.friendcode.Equals(friendcode, StringComparison.CurrentCultureIgnoreCase))
                 {
                     _logger.LogInformation("HashPUID {0} exists in EACList. Reason {1}", friendcode, eacData.reason);
                     return true;

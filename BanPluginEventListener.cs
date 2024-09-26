@@ -85,7 +85,7 @@ namespace ImpostorBanPlugin
             var sha256Bytes = System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(puid2));
             var sha256Hash = BitConverter.ToString(sha256Bytes).Replace("-", string.Empty).ToLower();
 
-            return $"{sha256Hash[..5]}{sha256Hash[^4..]}";
+            return $"{sha256Hash[..5]}{sha256Hash[^4..]}".ToLower();
         }
     }
 }
