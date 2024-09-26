@@ -7,13 +7,15 @@ public class EacController
 {
     public class EacData
     {
-        public required string FriendCode { get; set; }
+        #pragma warning disable IDE1006
+        public required string friendcode { get; set; }
 
-        public required string HashPUID { get; set; }
+        public required string hashPUID { get; set; }
 
-        public required string Name { get; set; }
+        public required string name { get; set; }
 
-        public required string Reason { get; set; }
+        public required string reason { get; set; }
+        #pragma warning restore IDE1006
     }
 
     public class EACList
@@ -63,9 +65,9 @@ public class EacController
 
             foreach (var eacData in _eacList.EACDataList)
             {
-                if (eacData.HashPUID == hashPUID)
+                if (eacData.hashPUID == hashPUID)
                 {
-                    _logger.LogInformation("HashPUID {0} exists in EACList. Reason {1}", hashPUID, eacData.Reason);
+                    _logger.LogInformation("HashPUID {0} exists in EACList. Reason {1}", hashPUID, eacData.reason);
                     return true;
                 }
             }
@@ -83,9 +85,9 @@ public class EacController
 
             foreach (var eacData in _eacList.EACDataList)
             {
-                if (eacData.FriendCode == friendcode)
+                if (eacData.friendcode == friendcode)
                 {
-                    _logger.LogInformation("HashPUID {0} exists in EACList. Reason {1}", friendcode, eacData.Reason);
+                    _logger.LogInformation("HashPUID {0} exists in EACList. Reason {1}", friendcode, eacData.reason);
                     return true;
                 }
             }
