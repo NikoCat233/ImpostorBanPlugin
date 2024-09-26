@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
+﻿using Microsoft.Extensions.Logging;
 using System.Text.Json;
-using System.Threading.Tasks;
-using Serilog;
 
 namespace ImpostorBanPlugin;
 
@@ -27,9 +23,14 @@ public class EacController
 
     public class EACFunctions
     {
-        private readonly ILogger _logger = Log.Logger;
+        private readonly ILogger<BanPlugin> _logger;
         private string EndPointURL = "https://tohre.niko233.me/eac?token=";
         public static EACList? _eacList = new();
+
+        public EACFunctions(ILogger<BanPlugin> logger)
+        {
+            _logger = logger;
+        }
 
         public async Task UpdateEACListFromURLAsync(string token)
         {
@@ -44,11 +45,11 @@ public class EacController
             }
             catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
             {
-                _logger.Error("The request timed out while retrieving EAC data.");
+                _logger.LogError("The request timed out while retrieving EAC data.");
             }
             catch (Exception ex)
             {
-                _logger.Error("Error occurred while retrieving EAC data: " + ex.Message);
+                _logger.LogError("Error occurred while retrieving EAC data: " + ex.Message);
             }
         }
 
@@ -56,7 +57,7 @@ public class EacController
         {
             if (_eacList == null)
             {
-                _logger.Warning("EACList is null.");
+                _logger.LogWarning("EACList is null.");
                 return false;
             }
 
@@ -64,7 +65,7 @@ public class EacController
             {
                 if (eacData.HashPUID == hashPUID)
                 {
-                    _logger.Information("HashPUID {0} exists in EACList. Reason {1}", hashPUID, eacData.Reason);
+                    _logger.LogInformation("HashPUID {0} exists in EACList. Reason {1}", hashPUID, eacData.Reason);
                     return true;
                 }
             }
@@ -76,7 +77,7 @@ public class EacController
         {
             if (_eacList == null)
             {
-                _logger.Warning("EACList is null.");
+                _logger.LogWarning("EACList is null.");
                 return false;
             }
 
@@ -84,7 +85,7 @@ public class EacController
             {
                 if (eacData.FriendCode == friendcode)
                 {
-                    _logger.Information("HashPUID {0} exists in EACList. Reason {1}", friendcode, eacData.Reason);
+                    _logger.LogInformation("HashPUID {0} exists in EACList. Reason {1}", friendcode, eacData.Reason);
                     return true;
                 }
             }

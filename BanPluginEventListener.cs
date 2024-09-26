@@ -1,15 +1,16 @@
 ﻿using Impostor.Api.Events;
-using Serilog;
+using Impostor.Api.Games;
+using Microsoft.Extensions.Logging;
 
 namespace ImpostorBanPlugin
 {
     public class BanPluginEventListener : IEventListener
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<BanPlugin> _logger;
         private Config _config;
         private EacController.EACFunctions _eacFunctions;
 
-        public BanPluginEventListener(ILogger logger, Config config, EacController.EACFunctions eacFunctions)
+        public BanPluginEventListener(ILogger<BanPlugin> logger, Config config, EacController.EACFunctions eacFunctions)
         {
             _logger = logger;
             _config = config;
@@ -17,7 +18,7 @@ namespace ImpostorBanPlugin
         }
 
         [EventListener]
-        public async void OnPlayerJoined(IGamePlayerJoinedEvent e)
+        public void OnPlayerJoining(IGamePlayerJoiningEvent e)
         {
             var player = e.Player;
 
@@ -29,13 +30,47 @@ namespace ImpostorBanPlugin
 
             if (_eacFunctions.CheckHashPUIDExists(puid) || _eacFunctions.CheckFriendCodeExists(friendcode))
             {
-                _logger.Warning("{0} - Player {1} [{2}] is banned by EAC.", e.Game.Code, player.Client.Name, player.Client.Id);
+                _logger.LogWarning("{0} - Player {1} [{2}] is banned by EAC.", e.Game.Code, player.Client?.Name, player.Client?.Id);
 
-                if (player.Client != null)
+                e.JoinResult = GameJoinResult.CreateCustomError(_config.EacBanMessage);
+                return;
+            }
+
+            if (CheckBanList(puid, friendcode))
+            {
+                _logger.LogWarning("{0} - Player {1} [{2}] is banned by BanList.", e.Game.Code, player.Client?.Name, player.Client?.Id);
+
+                e.JoinResult = GameJoinResult.CreateCustomError(_config.CustomBanMessage);
+                return;
+            }
+        }
+
+        public bool CheckBanList(string code, string hashedpuid = "")
+        {
+            bool OnlyCheckPuid = false;
+            if (code == "" && hashedpuid != "") OnlyCheckPuid = true;
+            else if (code == "") return false;
+
+            try
+            {
+                if (!File.Exists(_config.BanListLocation)) File.Create(_config.BanListLocation).Close();
+                using StreamReader sr = new(_config.BanListLocation);
+                string line;
+                while ((line = sr.ReadLine()) != null)
                 {
-                    await player.Client.DisconnectAsync(Impostor.Api.Innersloth.DisconnectReason.Custom, _config.EacBanMessage);
+                    if (line == "") continue;
+                    if (!OnlyCheckPuid)
+                    {
+                        if (line.Contains(code)) return true;
+                    }
+                    if (line.Contains(hashedpuid)) return true;
                 }
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "CheckBanList");
+            }
+            return false;
         }
     }
 }

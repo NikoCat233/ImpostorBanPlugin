@@ -1,14 +1,14 @@
-using System.Text.Json;
 using Impostor.Api.Events.Managers;
 using Impostor.Api.Plugins;
-using Serilog;
+using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace ImpostorBanPlugin
 {
     [ImpostorPlugin("niko233.BanPlugin")]
     public class BanPlugin : PluginBase
     {
-        private readonly ILogger _logger = Log.Logger;
+        private readonly ILogger<BanPlugin> _logger;
         private readonly IEventManager _eventManager;
         private Config _config;
         private IDisposable _unregister;
@@ -17,29 +17,30 @@ namespace ImpostorBanPlugin
         private EacController.EACFunctions _eacFunctions;
         private Timer _eacSyncTimer;
 
-        public BanPlugin(IEventManager eventManager)
+        public BanPlugin(ILogger<BanPlugin> logger, IEventManager eventManager)
         {
+            _logger = logger;
             _eventManager = eventManager;
         }
 
         public override ValueTask EnableAsync()
         {
             _config = LoadConfig();
-            _eacFunctions = new EacController.EACFunctions();
+            _eacFunctions = new EacController.EACFunctions(_logger);
 
             if (_config.UseEac)
             {
                 _eacSyncTimer = new Timer(async _ => await _eacFunctions.UpdateEACListFromURLAsync("impostor_ban_plugin"), null, TimeSpan.Zero, TimeSpan.FromMinutes(5));
             }
 
-            _logger.Information("Ban plugin is enabled.");
+            _logger.LogInformation("Ban plugin is enabled.");
             _unregister = _eventManager.RegisterListener(new BanPluginEventListener(_logger, _config, _eacFunctions));
             return default;
         }
 
         public override ValueTask DisableAsync()
         {
-            _logger.Information("Ban plugin is disabled.");
+            _logger.LogInformation("Ban plugin is disabled.");
             _unregister.Dispose();
             _eacSyncTimer?.Dispose();
             return default;
@@ -75,6 +76,7 @@ namespace ImpostorBanPlugin
             if (string.IsNullOrEmpty(config?.BanListLocation))
             {
                 banListPath = Path.Combine(Environment.CurrentDirectory, "banlist.txt");
+                config.BanListLocation = banListPath;
             }
             else
             {
@@ -84,6 +86,7 @@ namespace ImpostorBanPlugin
             if (!File.Exists(banListPath))
             {
                 File.WriteAllText(banListPath, string.Empty);
+                File.WriteAllText(config_path, JsonSerializer.Serialize(config, options));
             }
 
             return config;
