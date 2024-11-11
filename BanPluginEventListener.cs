@@ -1,7 +1,6 @@
-﻿using System.Text;
-using Impostor.Api.Events;
+﻿using Impostor.Api.Events;
 using Impostor.Api.Games;
-using Microsoft.Extensions.Logging;
+using System.Text;
 
 namespace ImpostorBanPlugin
 {
