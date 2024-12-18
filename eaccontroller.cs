@@ -46,11 +46,11 @@ public class EacController
             }
             catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
             {
-                _logger.LogError("The request timed out while retrieving EAC data.");
+                _logger.LogDebug("The request timed out while retrieving EAC data.");
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error occurred while retrieving EAC data: " + ex.Message);
+                _logger.LogDebug("Error occurred while retrieving EAC data: " + ex.Message);
             }
         }
 
